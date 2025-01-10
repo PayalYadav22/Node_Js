@@ -1,0 +1,12 @@
+{
+  "name": "methods",
+  "version": "1.0.0",
+  "description": "\"this is method sections\"",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Payal Yadav",
+  "license": "ISC"
+}

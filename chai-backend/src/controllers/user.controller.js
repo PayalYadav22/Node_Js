@@ -21,14 +21,16 @@ const registerUser = asyncHandler(async (req, res) => {
     }
 
     const avatarLocalFile = req.files?.avatar?.[0]; 
+    const coverImageLocalFile = req.files?.coverImage?.[0]; 
 
     if (!avatarLocalFile) {
         throw new ApiError(400, "Avatar file is required.");
     }else{
-        res.status(200).json({ message: " Avatar file uploaded successfully!", files: { avatar } });
+        res.status(200).json({ message: " Avatar file uploaded successfully!" });
     }
 
     const avatar = await uploadOnCloudinary(avatarLocalFile);
+    const coverImage = await uploadOnCloudinary(coverImageLocalFile);
 
     if (!avatar) {
         console.log("Avatar upload failed.");
@@ -39,7 +41,8 @@ const registerUser = asyncHandler(async (req, res) => {
         username: username.toLowerCase(),
         fullName: fullname,
         email,
-        avatar: avatar.url,
+        avatar: avatar.path,
+        coverImage: coverImage.path ? '' : null,
         password
     });
 

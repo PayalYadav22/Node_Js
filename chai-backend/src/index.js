@@ -12,8 +12,8 @@ connectDB()
         console.error(`Server Connection Failed ${error.message}`);
         throw error;
     });
-    app.listen(process.env.PORT || 8000, () => {
-        console.error(`Server is running at port ${process.env.PORT || 8000}`);
+    app.listen(process.env.PORT || 5000, () => {
+        console.error(`Server is running at port ${process.env.PORT || 5000}`);
     });
 })
 .catch((error)=>{
