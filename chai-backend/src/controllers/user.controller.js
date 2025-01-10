@@ -274,6 +274,7 @@ const UpdateUserAvatar = asyncHandler(async (req, res) => {
     })
 });
 
+// Update Cover Image
 const UpdateUserCoverImage = asyncHandler(async (req, res) => {
     const coverImageLocalFile = req.file?.path;
     if(!coverImageLocalFile){
