@@ -1,5 +1,6 @@
 class ApiResponse extends Response{
     constructor(statusCode, data, message = "Success"){
+        super(); 
         this.statusCode = statusCode,
         this.data = data,
         this.message = message,
