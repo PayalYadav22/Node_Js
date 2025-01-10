@@ -29,7 +29,7 @@ const generateAccessAndRefreshToken = async (userId) => {
 // Refresh & Access Tokens
 const RefreshAccessToken = asyncHandler(async (req, res) => {
     const incomingRefreshToken = req.cookie.refreshToken || req.body.refreshToken
-    if(incomingRefreshToken){
+    if(!incomingRefreshToken){
         throw new ApiError(401, "unauthorized request")
     }
     try{
@@ -187,7 +187,7 @@ const ChangePasswordUser = asyncHandler(async (req, res) => {
     }
 
     // Step 2: Find the user by ID
-    const user = await User.findById(req.user._id, { $unset: { refreshToken: "" } }, { new: true });
+    const user = await User.findById(req.user._id);
 
     if (!user) {
         throw new ApiError(404, "User not found.");

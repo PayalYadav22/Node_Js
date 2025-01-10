@@ -7,11 +7,11 @@ const router = express.Router()
 
 router.route("/register").post(upload, registerUser)
 router.route("/login").post(loginUser)
-router.route("/reset").post(ResetPasswordUser)
+router.route("/resetPassword").post(ResetPasswordUser)
 
 // secure routes
 router.route("/refresh-token").post(RefreshAccessToken)
 router.route("/logout").post(verifyJWT, logoutUser)
-router.route("/changePassword").post(verifyJWT, logoutUser)
+router.route("/changePassword").post(verifyJWT, ChangePasswordUser)
 
 export default router
