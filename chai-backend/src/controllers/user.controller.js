@@ -266,7 +266,7 @@ const UpdateUserAvatar = asyncHandler(async (req, res) => {
         {
             new: true
         }
-    )
+    ).select("-password -refreshToken")
     return res.status(200).json({
         success: true,
         avatar,
@@ -294,7 +294,7 @@ const UpdateUserCoverImage = asyncHandler(async (req, res) => {
         {
             new: true
         }
-    )
+    ).select("-password -refreshToken")
     return res.status(200).json({
         success: true,
         avatar,
