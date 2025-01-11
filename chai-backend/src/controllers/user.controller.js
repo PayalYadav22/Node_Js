@@ -218,7 +218,7 @@ const changePasswordUser = asyncHandler(async (req, res) => {
 });
 
 // getCurrent User
-const getCurrent = asyncHandler(async (req, res) => {
+const getCurrentUser = asyncHandler(async (req, res) => {
     return res
     .status(200)
     .json(
@@ -377,7 +377,7 @@ const getUserChannelProfile = asyncHandler(async (req, res) => {
     )
 });
 
-// 
+// Get Watch History
 const getWatchHistory = asyncHandler(async (req, res) => {
     const user = await User.aggregate(
         [
@@ -442,7 +442,7 @@ export {
     loginUser, 
     logoutUser, 
     changePasswordUser, 
-    getCurrent,
+    getCurrentUser,
     updateAccountDetails,
     updateUserAvatar,
     updateUserCoverImage,
