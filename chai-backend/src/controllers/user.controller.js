@@ -4,6 +4,7 @@ import ApiResponse from '../utils/ApiResponse.js';
 import { User } from '../models/user.models.js';
 import { uploadOnCloudinary } from '../utils/Cloudinary.js';
 import jwt from 'jsonwebtoken'
+import mongoose from 'mongoose';
 
 // Generate Access and Refresh Tokens
 const generateAccessAndRefreshToken = async (userId) => {
@@ -27,7 +28,7 @@ const generateAccessAndRefreshToken = async (userId) => {
 };
 
 // Refresh & Access Tokens
-const RefreshAccessToken = asyncHandler(async (req, res) => {
+const refreshAccessToken = asyncHandler(async (req, res) => {
     const incomingRefreshToken = req.cookie.refreshToken || req.body.refreshToken
     if(!incomingRefreshToken){
         throw new ApiError(401, "unauthorized request")
@@ -174,7 +175,7 @@ const logoutUser = asyncHandler(async (req, res) => {
 });
 
 // Change Password
-const ChangePasswordUser = asyncHandler(async (req, res) => {
+const changePasswordUser = asyncHandler(async (req, res) => {
 
     // Step 1: Destructure input fields and validate required fields
     const { oldPassword, newPassword, confirmPassword } = req.body;
@@ -230,7 +231,7 @@ const getCurrent = asyncHandler(async (req, res) => {
 });
 
 // Update Account Details
-const UpdateAccountDetails = asyncHandler(async (req, res) => {
+const updateAccountDetails = asyncHandler(async (req, res) => {
     const {username, email, fullName} = req.body;
     if(!username || !email || !fullName){
         throw new ApiError(400, "All fields are required.");
@@ -246,7 +247,7 @@ const UpdateAccountDetails = asyncHandler(async (req, res) => {
 });
 
 // Update Avatar
-const UpdateUserAvatar = asyncHandler(async (req, res) => {
+const updateUserAvatar = asyncHandler(async (req, res) => {
     const avatarLocalPath = req.file?.path;
     if(!avatarLocalPath){
         throw new ApiError(400, "Avatar file is required.");
@@ -275,7 +276,7 @@ const UpdateUserAvatar = asyncHandler(async (req, res) => {
 });
 
 // Update Cover Image
-const UpdateUserCoverImage = asyncHandler(async (req, res) => {
+const updateUserCoverImage = asyncHandler(async (req, res) => {
     const coverImageLocalFile = req.file?.path;
     if(!coverImageLocalFile){
         throw new ApiError(400, "Avatar file is required.");
@@ -303,22 +304,149 @@ const UpdateUserCoverImage = asyncHandler(async (req, res) => {
     })
 });
 
+// GetUserChannelProfile
+const getUserChannelProfile = asyncHandler(async (req, res) => {
+    const {username} = req.params;
+    if(username?.trim()){
+        throw new ApiError(400, "Username is missing.");
+    }
+    const channel = await User.aggregate(
+        [
+            {
+                $match: {
+                    username: username.toLowerCase()
+                }
+            },
+            {
+                $lookup: {
+                    from: "subscriptions",
+                    localField: "_id",
+                    foreignField: "channel",
+                    as: "subscriptionsDetails"
+                }
+            },
+            {
+                $lookup: {
+                    from: "subscriptions",
+                    localField: "_id",
+                    foreignField: "subscriber",
+                    as: "subscriberDetails"
+                }
+            },
+            {
+                $addFields: {
+                    subscriberCount: {
+                        $size: "$subscriptionsDetails"
+                    },
+                    channelSubscriberCount: {
+                        $size: "$subscriberDetails"
+                    },
+                    isSubscribed: {
+                        $cond: {
+                            if:{
+                                $in: [req.user?._id, "$subscriptionsDetails.subscriber"]
+                            },
+                            then: true,
+                            else: false
+                        }
+                    }
+                }
+            },
+            {
+                $project: {
+                    fullName: 1,
+                    username: 1,
+                    channelSubscriberCount: 1,
+                    isSubscribed: 1,
+                    avatar: 1,
+                    coverImage: 1,
+                    email: 1,
+                }
+            }
+        ]
+    )
+    if(!channel?.length){
+        throw new ApiError(404, "Channel not found.");
+    }
+    return res.status(200).json(
+        new ApiResponse(
+            200,
+            channel[0],
+            "Channel profile fetched successfully."
+        )
+    )
+});
+
+// 
+const getWatchHistory = asyncHandler(async (req, res) => {
+    const user = await User.aggregate(
+        [
+            {
+                $match: {
+                    _id: new mongoose.Types.ObjectId(req.user?._id)
+                },
+                $lookup:{
+                    from: "videos",
+                    localField: "watchHistory",
+                    foreignField: "_id",
+                    as: "watchHistoryDetails",
+                    pipeline:[
+                        {
+                            $lookup:{
+                                from: "users",
+                                localField: "owner",
+                                foreignField: "_id",
+                                as: "ownerDetails",
+                                pipeline:[
+                                    {
+                                        $project:{
+                                            fullName: 1,
+                                            username: 1,
+                                            avatar: 1  
+                                        }
+                                    },
+                                    {
+                                        $addFields:{
+                                            owner:{
+                                                $first: "$owner"
+                                            }
+                                        }
+                                    }
+                                ]
+                            }
+                        }
+                    ]
+                }
+            }
+        ]
+    )
+    return res.status(200).json(
+        new ApiResponse(
+            200,
+            user[0].watchHistory,
+            "Watch history fetched successfully."
+        )
+    )
+});
+
 // Reset Password
-const ResetPasswordUser = asyncHandler(async (req, res) => {
+const resetPasswordUser = asyncHandler(async (req, res) => {
     res.json({
         message:"Reset Password"
     })
 });
 
 export {
-    RefreshAccessToken, 
+    refreshAccessToken, 
     registerUser, 
     loginUser, 
     logoutUser, 
-    ChangePasswordUser, 
+    changePasswordUser, 
     getCurrent,
-    UpdateAccountDetails,
-    UpdateUserAvatar,
-    UpdateUserCoverImage,
-    ResetPasswordUser
+    updateAccountDetails,
+    updateUserAvatar,
+    updateUserCoverImage,
+    getUserChannelProfile,
+    getWatchHistory,
+    resetPasswordUser
 }; 
