@@ -14,15 +14,5 @@ const storage = multer.diskStorage({
 });
 
 // Configure upload with multiple fields
-const upload = multer({ storage }).fields([
-    {
-        name: "avatar",
-        maxCount: 1,
-    },
-    {
-        name: "coverImage",
-        maxCount: 1,
-    },
-]);
-
+const upload = multer({ storage })
 export default upload;

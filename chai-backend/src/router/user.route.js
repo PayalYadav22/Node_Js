@@ -1,17 +1,47 @@
 import express from 'express'
-import {RefreshAccessToken, registerUser,loginUser, logoutUser, ChangePasswordUser, ResetPasswordUser} from "../controllers/user.controller.js"
+import {
+    refreshAccessToken, 
+    registerUser,
+    loginUser, 
+    logoutUser, 
+    changePasswordUser, 
+    getCurrentUser,
+    resetPasswordUser,
+    updateUserAvatar,
+    updateUserCoverImage,
+    getUserChannelProfile,
+    getWatchHistory
+    
+} from "../controllers/user.controller.js"
 import upload  from '../middleware/multer.middleware.js'
 import verifyJWT from '../middleware/auth.middleware.js'
 
 const router = express.Router()
 
-router.route("/register").post(upload, registerUser)
+router.route("/register").post(
+    upload.fields([
+    {
+        name: "avatar",
+        maxCount: 1,
+    },
+    {
+        name: "coverImage",
+        maxCount: 1,
+    },
+])
+, registerUser)
 router.route("/login").post(loginUser)
-router.route("/resetPassword").post(ResetPasswordUser)
+router.route("/reset-password").post(resetPasswordUser)
 
 // secure routes
-router.route("/refresh-token").post(RefreshAccessToken)
+router.route("/refresh-token").post(refreshAccessToken)
 router.route("/logout").post(verifyJWT, logoutUser)
-router.route("/changePassword").post(verifyJWT, ChangePasswordUser)
+router.route("/change-password").post(verifyJWT, changePasswordUser)
+router.route("/current-user").get(verifyJWT, getCurrentUser)
+router.route("/update-account").patch(verifyJWT, getCurrentUser)
+router.route("/avatar").patch(verifyJWT,upload.single('avatar'), updateUserAvatar)
+router.route("/cover-image").patch(verifyJWT, upload.single('coverImage'), updateUserCoverImage)
+router.route("/c/:username").get(verifyJWT, getUserChannelProfile)
+router.route("/watch-history").get(verifyJWT, getWatchHistory)
 
 export default router
